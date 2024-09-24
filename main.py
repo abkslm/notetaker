@@ -1,7 +1,10 @@
 import openai_handler, ollama_handler
-import os
+import os, time
 
 OUTPUT_PATH = "output.md"
+OLLAMA = 0 # you REALLY don't want to use this.
+OPENAI = 1
+
 
 def write_md(markdown: str) -> None:
     try:
@@ -12,12 +15,26 @@ def write_md(markdown: str) -> None:
         print(f"Please copy notes or re-run:\n{markdown}")
 
 
-if __name__ == '__main__':
+def summarize(transcription: str, provider: int) -> str:
+    if provider == OPENAI:
+        return openai_handler.summarize(transcription)
+    elif provider == OLLAMA:
+        return ollama_handler.summarize(transcription)
 
+
+def main():
     current_directory = os.path.dirname(os.path.abspath(__file__))
     audio_path = os.path.join(current_directory, "test_audio.m4a")
 
-    transcription = openai_handler.transcribe(audio_path=audio_path, local=True)
-    markdown_notes = openai_handler.summarize(transcription)
+    title_input = input("Please enter a title for the output markdown: ")
+    markdown_title = "# " + title_input + "\n" if title_input else "# " + time.time() + "\n"
+    tags_input = input("Please input any Bear tags, separated by a space (ex: #usf/ai/notes): ")
+    markdown_tags = tags_input + "\n\n" if tags_input else ""
 
-    write_md(markdown_notes)
+    transcription = openai_handler.transcribe(audio_path=audio_path, local=True)
+    markdown_notes = summarize(transcription, provider=OPENAI)
+
+    write_md(markdown_title + markdown_tags + markdown_notes)
+
+if __name__ == '__main__':
+    main()
