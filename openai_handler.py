@@ -57,7 +57,7 @@ def transcribe(audio_path: str, local: bool=True) -> str:
         start_time = time.time()
         print("Starting local transcription... This may take a while.")
         if torch.backends.mps.is_available():
-            return whisper_coreML.transcribe(audio_path)
+            transcription = whisper_coreML.transcribe(audio_path)
         else:
             model = load_whisper_model()
             transcription = transcribe_local(audio_path, whisper_model=model)
@@ -68,7 +68,7 @@ def transcribe(audio_path: str, local: bool=True) -> str:
         start_time = time.time()
         transcription = transcribe_cloud(audio_path)
         elapsed_time = time.time() - start_time
-        print(f"Finished local transcription.\nElapsed time: {elapsed_time * 60:.0f} minutes")
+        print(f"Finished cloud transcription.\nElapsed time: {elapsed_time / 60:.0f} minutes")
 
     return transcription
 
@@ -76,26 +76,37 @@ def transcribe(audio_path: str, local: bool=True) -> str:
 def summarize(transcription: str) -> str:
     print(f"Sending transcription to OpenAI for summarization...")
     response = client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4o-2024-08-06",
         temperature=0,
         messages=[
             {
                 "role":"system",
-                # "content": "As an LLM capable of analyzing bodies of text, your job is to produce a comprehensive summary of the input given by the user. "
-                #            "Please output in Markdown format, utilizing Markdown's syntax for headers, code blocks, text formatting, etc. "
-                #            "Please remove any information unnecessary and not relevant to the content as a whole. "
-                #            "Please provide include extensive explanations based off of the input. "
-                #            "Only provide properly formatted Markdown in response, do not provide anything else. "
+                # "content": "You are an LLM tasked with summarizing and analyzing text provided by the user. "
+                #            "Your output must be structured using Markdown syntax, employing headers, code blocks, bold, italics, lists, and other Markdown elements appropriately. "
+                #            "Ensure that the summary is concise yet comprehensive, focusing only on the most relevant and meaningful information from the input. Exclude any unnecessary or extraneous details. "
+                #            "Provide thorough explanations where needed, but ensure clarity and readability. "
+                #            "The output should only consist of well-formatted Markdown content without any additional information or comments. "
                 #            "Do not wrap the output."
-                "content": "You are an LLM tasked with summarizing and analyzing text provided by the user. "
-                           "Your output must be structured using Markdown syntax, "
-                           "employing headers, code blocks, bold, italics, lists, and other Markdown elements appropriately. "
-                           "Ensure that the summary is concise yet comprehensive, "
-                           "focusing only on the most relevant and meaningful information from the input. "
-                           "Exclude any unnecessary or extraneous details. "
-                           "Provide thorough explanations where needed, but ensure clarity and readability. "
-                           "The output should only consist of well-formatted Markdown content without any additional information or comments. "
-                           "Do not wrap the output."
+                "content": "You are an LLM tasked with analyzing and summarizing text provided by the user. "
+                           "Your output must be formatted using Markdown syntax, including headers, "
+                           "code blocks, bold, italics, lists, and other Markdown elements where appropriate. "
+                           "Summaries should prioritize comprehensive explanations of concepts, particularly for algorithms, methods, or other technical details. "
+                           "Provide pseudocode only when necessary, and ensure that the pseudocode is minimal and serves as a supplement to the explanation rather than the main focus. "
+                           "Exclude any irrelevant or unnecessary information. "
+                           "The output must be clear, concise, and readable, focusing on conveying understanding over the generation of code. "
+                           "Ensure all responses are in well-formatted Markdown without any additional comments or non-relevant information. "
+                           "Do not wrap the output. "
+                           "Do not include a title header."
+                # "content": "You are an LLM tasked with summarizing and analyzing text provided by the user. "
+                #            "Your output must be structured using Markdown syntax, "
+                #            "employing headers, code blocks, bold, italics, lists, and other Markdown elements appropriately. "
+                #            "Ensure that the summary is concise yet comprehensive, "
+                #            "focusing only on the most relevant and meaningful information from the input. "
+                #            "Exclude any unnecessary or extraneous details. "
+                #            "Provide thorough explanations where needed, but ensure clarity and readability. "
+                #            "Provide pseudocode for relevant topics. "
+                #            "The output should only consist of well-formatted Markdown content without any additional information or comments. "
+                #            "Do not wrap the output."
             },
             {
                 "role":"user",

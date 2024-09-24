@@ -7,7 +7,7 @@ llama_url = os.getenv("LLAMA_URL")
 
 
 def summarize(transcription: str) -> str:
-    system_prompt = ("As an LLM capable of analyzing bodies of text, your job is to produce a comprehensive summary of  the input given by the user. "
+    system_prompt = ("As an LLM capable of analyzing bodies of text, your job is to produce a comprehensive summary of the input given by the user. "
                      "Please output in Markdown format, utilizing Markdown's syntax for headers, code blocks, text formatting, etc. "
                      "Please remove any information unnecessary and not relevant to the content as a whole. "
                      "Your summary should be long and comprehensive. Do not leave details out. "
